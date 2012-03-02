@@ -14,11 +14,11 @@ Create an account at http://openshift.redhat.com/
 
 Create a php-5.3 application (you can call your application whatever you want)
 
-    rhc-create-app -a magento -t php-5.3
+    rhc app create -a magento -t php-5.3
 
 Add MySQL support to your application
 
-    rhc-ctl-app -a magento -e add-mysql-5.1
+    rhc app cartridge add -a magento -c mysql-5.1
 
 Add this upstream Magento repo
 
@@ -46,9 +46,9 @@ GIT_ROOT/.openshift/action_hooks/deploy:
     If you need to modify the schema, you could create a file 
     GIT_ROOT/.openshift/action_hooks/alter.sql and then use
     GIT_ROOT/.openshift/action_hooks/deploy to execute that script (make sure to
-    back up your application + database w/ rhc-snapshot first :) )
+    back up your application + database w/ 'rhc app snapshot save' first :) )
 
 The initialization steps will make changes to the files on the server side.  To pull 
-those to your local repo, you can run rhc-snapshot -a magento from your client, explode
+those to your local repo, you can run 'rhc app snapshot save -a magento' from your client, explode
 the resulting tar.gz and pull all the files from magento/repo/php back to your local
 magento/php directory.  It's always a good idea to take a snapshot every now and then.
