@@ -1,8 +1,8 @@
-Magento on OpenShift Express
-==============================
+Magento on OpenShift
+====================
 
 This git repository helps you get up and running quickly w/ a Magento installation
-on OpenShift Express.  It will be a clean installation where you will need to accept
+on OpenShift.  It will be a clean installation where you will need to accept
 the license agreement as well as configure your database connectivity and configure 
 the admin user account.
 
