@@ -3,3 +3,22 @@
 # build hook has been run but before the application has been started back
 # up again.  This script gets executed directly, so it could be python, php,
 # ruby, etc.
+
+# Install the sample Magento data if it has not been setup
+
+export SAMPLE_NAME=magento-sample-data-1.6.1.0
+if [ ! -f ${OPENSHIFT_DATA_DIR}.magento-sample-installed ];
+then
+  echo "Extracting sample data"
+  tar xvzf ${OPENSHIFT_REPO_DIR}misc/${SAMPLE_NAME}.tar.gz -C $OPENSHIFT_TMP_DIR 2>&1 >/dev/null
+
+  # Move the media folder into it's correct place
+  mv ${OPENSHIFT_REPO_DIR}misc/media $OPENSHIFT_DATA_DIR
+  mv  ${OPENSHIFT_TMP_DIR}${SAMPLE_NAME}/media/* ${OPENSHIFT_DATA_DIR}media
+  chmod -R o+w ${OPENSHIFT_DATA_DIR}media
+fi
+
+# If the symlink to the media folder doesn't exist, create it
+if [ ! -L ${OPENSHIFT_DATA_DIR}media ]; then
+  ln -s ${OPENSHIFT_DATA_DIR}media ${OPENSHIFT_REPO_DIR}php/media
+fi
