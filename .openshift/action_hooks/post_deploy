@@ -20,7 +20,7 @@ then
   php -f ${OPENSHIFT_REPO_DIR}php/install.php -- \
     --license_agreement_accepted "yes" \
     --locale "en_GB" \
-    --timezone "Europe\London" \
+    --timezone "Europe/London" \
     --default_currency "GBP" \
     --db_host "$OPENSHIFT_DB_HOST" \
     --db_name "$OPENSHIFT_APP_NAME" \
