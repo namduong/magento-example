@@ -42,3 +42,9 @@ then
   # Set the flag
   touch $OPENSHIFT_DATA_DIR/.magento-sample-installed
 fi
+
+# Rehome the configuration to 
+if [ -f "${OPENSHIFT_REPO_DIR}php/app/etc/local.xml" ]; then
+  mv ${OPENSHIFT_REPO_DIR}php/app/etc/local.xml ${OPENSHIFT_DATA_DIR}
+fi
+ln -s ${OPENSHIFT_DATA_DIR}local.xml ${OPENSHIFT_REPO_DIR}php/app/etc/local.xml
