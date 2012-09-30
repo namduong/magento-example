@@ -20,7 +20,7 @@ Add MySQL support to your application
 
 Add this upstream Magento repo
 
-    cd magento 
+    cd $appname
     git remote add upstream -m master git://github.com/cwoodcock/openshift-magento-example.git
     git pull -s recursive -X theirs upstream master
     # note that the git pull above can be used later to pull updates to Magento
