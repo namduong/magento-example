@@ -48,3 +48,6 @@ if [ -f "${OPENSHIFT_REPO_DIR}php/app/etc/local.xml" ]; then
   mv ${OPENSHIFT_REPO_DIR}php/app/etc/local.xml ${OPENSHIFT_DATA_DIR}
 fi
 ln -s ${OPENSHIFT_DATA_DIR}local.xml ${OPENSHIFT_REPO_DIR}php/app/etc/local.xml
+
+# Reindex DB
+php ${OPENSHIFT_REPO_DIR}php/shell/indexer.php reindexall
