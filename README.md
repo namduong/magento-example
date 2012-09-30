@@ -1,11 +1,9 @@
 Magento on OpenShift
 ====================
 
-This git repository helps you get up and running quickly w/ a Magento installation
-on OpenShift.  It will be a clean installation where you will need to accept
-the license agreement as well as configure your database connectivity and configure 
-the admin user account.
+This git repository creates a Magento installation on OpenShift.
 
+Sample data is populated and the application configured automagically.
 
 Running on OpenShift
 ----------------------------
@@ -14,16 +12,16 @@ Create an account at http://openshift.redhat.com/
 
 Create a php-5.3 application (you can call your application whatever you want)
 
-    rhc app create -a magento -t php-5.3
+    rhc app create -a $appname -t php-5.3
 
 Add MySQL support to your application
 
-    rhc app cartridge add -a magento -c mysql-5.1
+    rhc app cartridge add -a $appname -c mysql-5.1
 
 Add this upstream Magento repo
 
     cd magento 
-    git remote add upstream -m master git://github.com/openshift/magento-example.git
+    git remote add upstream -m master git://github.com/cwoodcock/openshift-magento-example.git
     git pull -s recursive -X theirs upstream master
     # note that the git pull above can be used later to pull updates to Magento
     
@@ -33,7 +31,7 @@ Then push the repo upstream
 
 That's it, you can now checkout your application at:
 
-    http://magento-$yournamespace.rhcloud.com
+    http://$yourappname-$yournamespace.rhcloud.com
 
 
 NOTES:
