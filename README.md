@@ -18,4 +18,19 @@ That's it, you can now checkout your application at:
 
     http://$appname-$yournamespace.rhcloud.com
 
-Default credentials: username 'admin' password 'OpenShiftAdmin123'.
+Default admin credentials: username '_admin_' password '_OpenShiftAdmin123_'.
+
+### Post-installation details
+
+After the installation it is important to change the admin password and other Magento configurations properly. Log in to 
+
+    http://$appname-$yournamespace.rhcloud.com/admin
+
+using the provided credentials and check all system settings, for example:
+
+ * System > My Account
+ * System > Configuration > General > Countries Options
+ * System > Configuration > General > Locale Options
+ * System > Configuration > Admin
+ * System > Configuration > System
+ 
