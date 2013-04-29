@@ -6,6 +6,8 @@
 
 # Install the sample Magento data if it has not been setup
 
+set -e
+
 export SAMPLE_NAME=magento-sample-data-1.6.1.0
 
 if [ ! -f ${OPENSHIFT_DATA_DIR}.magento-sample-installed ];
@@ -25,8 +27,6 @@ if [ ! -L ${OPENSHIFT_DATA_DIR}media ]; then
 fi
 
 # Check and wait for MySQL
-set -e
-
 if [ -z "$OPENSHIFT_MYSQL_DB_HOST" ]
 then
     echo 1>&2
@@ -60,3 +60,50 @@ if [ -z "$OPENSHIFT_MYSQL_DB_HOST" ]
 then
     exit 5
 fi
+
+if [ ! -f ${OPENSHIFT_DATA_DIR}.magento-sample-installed ];
+then
+  echo "Poulating database"
+  mysql --socket=${OPENSHIFT_MYSQL_DB_SOCKET} -u${OPENSHIFT_MYSQL_DB_USERNAME} -p${OPENSHIFT_MYSQL_DB_PASSWORD} ${OPENSHIFT_APP_NAME} < ${OPENSHIFT_TMP_DIR}magento-sample-data-1.6.1.0/magento_sample_data_for_1.6.1.0.sql
+
+  echo "Generating Magento admin password"
+  # Generate the admin password
+  MD5STR=$(head -1024 /dev/urandom | md5sum | md5sum)
+  MAGENTO_ADMIN_PASSWORD="${MD5STR:2:8}"
+  echo "Magento admin password: $MAGENTO_ADMIN_PASSWORD"
+
+  echo "Configuring Magento for first use"
+  php -f ${OPENSHIFT_REPO_DIR}php/install.php -- \
+    --license_agreement_accepted "yes" \
+    --locale "en_GB" \
+    --timezone "Europe/London" \
+    --default_currency "GBP" \
+    --db_host "$OPENSHIFT_MYSQL_DB_HOST" \
+    --db_name "$OPENSHIFT_APP_NAME" \
+    --db_user "$OPENSHIFT_MYSQL_DB_USERNAME" \
+    --db_pass "$OPENSHIFT_MYSQL_DB_PASSWORD" \
+    --skip_url_validation \
+    --url "http://$OPENSHIFT_APP_DNS" \
+    --use_rewrites "yes" \
+    --use_secure "yes" \
+    --enable_charts \
+    --secure_base_url "https://$OPENSHIFT_APP_DNS" \
+    --use_secure_admin "yes" \
+    --admin_firstname "Test" \
+    --admin_lastname "Magento" \
+    --admin_email "foo@bar.com" \
+    --admin_username "admin" \
+    --admin_password "$MAGENTO_ADMIN_PASSWORD"
+
+  # Set the flag
+  touch $OPENSHIFT_DATA_DIR/.magento-sample-installed
+fi
+
+# Rehome the configuration to 
+if [ -f "${OPENSHIFT_REPO_DIR}php/app/etc/local.xml" ]; then
+  mv ${OPENSHIFT_REPO_DIR}php/app/etc/local.xml ${OPENSHIFT_DATA_DIR}
+fi
+ln -s ${OPENSHIFT_DATA_DIR}local.xml ${OPENSHIFT_REPO_DIR}php/app/etc/local.xml
+
+# Reindex DB
+php ${OPENSHIFT_REPO_DIR}php/shell/indexer.php reindexall
