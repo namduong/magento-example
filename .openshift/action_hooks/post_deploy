@@ -8,7 +8,7 @@ then
   cd $OPENSHIFT_GEAR_DIR
 
   echo "Poulating database"
-  mysql --socket=${OPENSHIFT_DB_SOCKET} -u${OPENSHIFT_DB_USERNAME} -p${OPENSHIFT_DB_PASSWORD} ${OPENSHIFT_APP_NAME} < ${OPENSHIFT_TMP_DIR}magento-sample-data-1.6.1.0/magento_sample_data_for_1.6.1.0.sql
+  mysql --socket=${OPENSHIFT_MYSQL_DB_SOCKET} -u${OPENSHIFT_MYSQL_DB_USERNAME} -p${OPENSHIFT_MYSQL_DB_PASSWORD} ${OPENSHIFT_APP_NAME} < ${OPENSHIFT_TMP_DIR}magento-sample-data-1.6.1.0/magento_sample_data_for_1.6.1.0.sql
 
   echo "Generating Magento admin password"
   # Generate the admin password
@@ -22,10 +22,10 @@ then
     --locale "en_GB" \
     --timezone "Europe/London" \
     --default_currency "GBP" \
-    --db_host "$OPENSHIFT_DB_HOST" \
+    --db_host "$OPENSHIFT_MYSQL_DB_HOST" \
     --db_name "$OPENSHIFT_APP_NAME" \
-    --db_user "$OPENSHIFT_DB_USERNAME" \
-    --db_pass "$OPENSHIFT_DB_PASSWORD" \
+    --db_user "$OPENSHIFT_MYSQL_DB_USERNAME" \
+    --db_pass "$OPENSHIFT_MYSQL_DB_PASSWORD" \
     --skip_url_validation \
     --url "http://$OPENSHIFT_APP_DNS" \
     --use_rewrites "yes" \
@@ -33,9 +33,9 @@ then
     --enable_charts \
     --secure_base_url "https://$OPENSHIFT_APP_DNS" \
     --use_secure_admin "yes" \
-    --admin_firstname "NetSrv" \
-    --admin_lastname "Consulting" \
-    --admin_email "enquires@netsrv-consulting.com" \
+    --admin_firstname "Test" \
+    --admin_lastname "Magento" \
+    --admin_email "foo@bar.com" \
     --admin_username "admin" \
     --admin_password "$MAGENTO_ADMIN_PASSWORD"
 
