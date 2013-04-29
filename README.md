@@ -18,4 +18,4 @@ That's it, you can now checkout your application at:
 
     http://$appname-$yournamespace.rhcloud.com
 
-Default credentials: username 'admin' password 'OpenShiftAdmin'.
+Default credentials: username 'admin' password 'OpenShiftAdmin123'.
