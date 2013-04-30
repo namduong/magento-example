@@ -1,54 +1,36 @@
 Magento on OpenShift
 ====================
 
-This git repository helps you get up and running quickly w/ a Magento installation
-on OpenShift.  It will be a clean installation where you will need to accept
-the license agreement as well as configure your database connectivity and configure 
-the admin user account.
+This git repository creates a Magento installation on OpenShift.
 
+Sample data is populated and the application configured automagically.
 
 Running on OpenShift
 ----------------------------
 
 Create an account at http://openshift.redhat.com/
 
-Create a php-5.3 application (you can call your application whatever you want)
+Create a php-5.3 + mysql 5.1 application based on this repo's code (you can call your application whatever you want)
 
-    rhc app create -a magento -t php-5.3
-
-Add MySQL support to your application
-
-    rhc cartridge add -a magento -c mysql-5.1
-
-Add this upstream Magento repo
-
-    cd magento 
-    git remote add upstream -m master git://github.com/openshift/magento-example.git
-    git pull -s recursive -X theirs upstream master
-    # note that the git pull above can be used later to pull updates to Magento
-    
-Then push the repo upstream
-
-    git push
+    rhc app create $appname php-5.3 mysql-5.1 --from-code=https://github.com/fabianofranz/openshift-magento-example
 
 That's it, you can now checkout your application at:
 
-    http://magento-$yournamespace.rhcloud.com
+    http://$appname-$yournamespace.rhcloud.com
 
+Default admin credentials: username _admin_ password _OpenShiftAdmin123_.
 
-NOTES:
+### Post-installation details
 
-GIT_ROOT/.openshift/action_hooks/deploy:
-    This script is executed with every 'git push'.  Feel free to modify this script
-    to learn how to use it to your advantage.  By default, this script will create
-    the database tables that this example uses.
+After the installation it is important to change the admin password and other Magento configurations properly. Log in to 
 
-    If you need to modify the schema, you could create a file 
-    GIT_ROOT/.openshift/action_hooks/alter.sql and then use
-    GIT_ROOT/.openshift/action_hooks/deploy to execute that script (make sure to
-    back up your application + database w/ 'rhc app snapshot save' first :) )
+    http://$appname-$yournamespace.rhcloud.com/admin
 
-The initialization steps will make changes to the files on the server side.  To pull 
-those to your local repo, you can run 'rhc app snapshot save -a magento' from your client, explode
-the resulting tar.gz and pull all the files from magento/repo/php back to your local
-magento/php directory.  It's always a good idea to take a snapshot every now and then.
+using the provided credentials and check all system settings, for example:
+
+ * System > My Account
+ * System > Configuration > General > Countries Options
+ * System > Configuration > General > Locale Options
+ * System > Configuration > Admin
+ * System > Configuration > System
+ 

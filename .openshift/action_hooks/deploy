@@ -3,3 +3,102 @@
 # build hook has been run but before the application has been started back
 # up again.  This script gets executed directly, so it could be python, php,
 # ruby, etc.
+
+# Install the sample Magento data if it has not been setup
+
+set -e
+
+export SAMPLE_NAME=magento-sample-data-1.6.1.0
+MAGENTO_ADMIN_USERNAME="admin"
+MAGENTO_ADMIN_PASSWORD="OpenShiftAdmin123"
+
+if [ ! -f ${OPENSHIFT_DATA_DIR}.magento-sample-installed ];
+then
+  echo "Extracting sample data"
+  tar xvzf ${OPENSHIFT_REPO_DIR}misc/${SAMPLE_NAME}.tar.gz -C $OPENSHIFT_TMP_DIR 2>&1 >/dev/null
+
+  # Move the media folder into it's correct place
+  mv ${OPENSHIFT_REPO_DIR}misc/media $OPENSHIFT_DATA_DIR
+  mv  ${OPENSHIFT_TMP_DIR}${SAMPLE_NAME}/media/* ${OPENSHIFT_DATA_DIR}media
+  chmod -R o+w ${OPENSHIFT_DATA_DIR}media
+fi
+
+# If the symlink to the media folder doesn't exist, create it
+if [ ! -L ${OPENSHIFT_DATA_DIR}media ]; then
+  ln -s ${OPENSHIFT_DATA_DIR}media ${OPENSHIFT_REPO_DIR}php/media
+fi
+
+# Check and wait for MySQL
+if [ -z "$OPENSHIFT_MYSQL_DB_HOST" ]
+then
+    echo 1>&2
+    echo "Could not find mysql database.  Please run:" 1>&2
+    echo "rhc cartridge add -a $OPENSHIFT_APP_NAME -c mysql-5.1" 1>&2
+    echo "then make a sample commit (add whitespace somewhere) and re-push" 1>&2
+    echo 1>&2
+fi
+
+RETRY=60
+while [ $RETRY -gt 0 ] ; do
+    #reload env variables
+    for env_var in  $OPENSHIFT_HOMEDIR/.env/*
+    do
+        . $env_var
+    done
+
+    #check for db
+    if [ -n "$OPENSHIFT_MYSQL_DB_HOST" ]
+    then
+        echo "Database server found at $OPENSHIFT_MYSQL_DB_HOST."
+        sleep 5
+        break
+    fi
+
+    sleep 1
+    RETRY=$(( $RETRY - 1 ))
+done
+
+if [ -z "$OPENSHIFT_MYSQL_DB_HOST" ]
+then
+    exit 5
+fi
+
+if [ ! -f ${OPENSHIFT_DATA_DIR}.magento-sample-installed ];
+then
+  echo "Poulating database"
+  mysql --socket=${OPENSHIFT_MYSQL_DB_SOCKET} -u${OPENSHIFT_MYSQL_DB_USERNAME} -p${OPENSHIFT_MYSQL_DB_PASSWORD} ${OPENSHIFT_APP_NAME} < ${OPENSHIFT_TMP_DIR}magento-sample-data-1.6.1.0/magento_sample_data_for_1.6.1.0.sql
+
+  echo "Magento admin password: $MAGENTO_ADMIN_PASSWORD"
+
+  echo "Configuring Magento for first use"
+  php -f ${OPENSHIFT_REPO_DIR}php/install.php -- \
+    --license_agreement_accepted "yes" \
+    --locale "en_GB" \
+    --timezone "Europe/London" \
+    --default_currency "GBP" \
+    --db_host "$OPENSHIFT_MYSQL_DB_HOST" \
+    --db_name "$OPENSHIFT_APP_NAME" \
+    --db_user "$OPENSHIFT_MYSQL_DB_USERNAME" \
+    --db_pass "$OPENSHIFT_MYSQL_DB_PASSWORD" \
+    --skip_url_validation \
+    --url "http://$OPENSHIFT_APP_DNS" \
+    --use_rewrites "yes" \
+    --use_secure "yes" \
+    --enable_charts \
+    --secure_base_url "https://$OPENSHIFT_APP_DNS" \
+    --use_secure_admin "yes" \
+    --admin_firstname "Test" \
+    --admin_lastname "Magento" \
+    --admin_email "foo@bar.com" \
+    --admin_username "$MAGENTO_ADMIN_USERNAME" \
+    --admin_password "$MAGENTO_ADMIN_PASSWORD"
+
+  # Set the flag
+  touch $OPENSHIFT_DATA_DIR/.magento-sample-installed
+fi
+
+# Rehome the configuration to 
+if [ -f "${OPENSHIFT_REPO_DIR}php/app/etc/local.xml" ]; then
+  mv ${OPENSHIFT_REPO_DIR}php/app/etc/local.xml ${OPENSHIFT_DATA_DIR}
+fi
+ln -s ${OPENSHIFT_DATA_DIR}local.xml ${OPENSHIFT_REPO_DIR}php/app/etc/local.xml
