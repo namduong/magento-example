@@ -46,7 +46,7 @@ fi
 if [ ! -f ${OPENSHIFT_DATA_DIR}.magento-sample-installed ];
 then
   echo "Poulating database"
-  mysql --socket=${OPENSHIFT_MYSQL_DB_SOCKET} -u${OPENSHIFT_MYSQL_DB_USERNAME} -p${OPENSHIFT_MYSQL_DB_PASSWORD} ${OPENSHIFT_APP_NAME} < ${OPENSHIFT_TMP_DIR}magento-sample-data-1.6.1.0/magento_sample_data_for_1.6.1.0.sql
+  mysql -h${OPENSHIFT_MYSQL_DB_HOST} -P${OPENSHIFT_MYSQL_DB_PORT} -u${OPENSHIFT_MYSQL_DB_USERNAME} -p${OPENSHIFT_MYSQL_DB_PASSWORD} ${OPENSHIFT_APP_NAME} < ${OPENSHIFT_TMP_DIR}magento-sample-data-1.6.1.0/magento_sample_data_for_1.6.1.0.sql
 
   echo "Magento admin password: $MAGENTO_ADMIN_PASSWORD"
 
