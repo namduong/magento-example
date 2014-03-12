@@ -8,7 +8,7 @@ Sample data is populated and the application configured automagically.
 Running on OpenShift
 ----------------------------
 
-Create an account at http://openshift.redhat.com/
+Create an account at http://www.openshift.com/
 
 Create a php-5.3 + mysql 5.1 application based on this repo's code (you can call your application whatever you want)
 
