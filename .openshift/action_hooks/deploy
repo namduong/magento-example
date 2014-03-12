@@ -56,7 +56,7 @@ then
     --locale "en_GB" \
     --timezone "Europe/London" \
     --default_currency "GBP" \
-    --db_host "$OPENSHIFT_MYSQL_DB_HOST" \
+    --db_host "$OPENSHIFT_MYSQL_DB_HOST:$OPENSHIFT_MYSQL_DB_PORT" \
     --db_name "$OPENSHIFT_APP_NAME" \
     --db_user "$OPENSHIFT_MYSQL_DB_USERNAME" \
     --db_pass "$OPENSHIFT_MYSQL_DB_PASSWORD" \
