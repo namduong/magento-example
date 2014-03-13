@@ -12,14 +12,22 @@ export SAMPLE_NAME=magento-sample-data-1.6.1.0
 MAGENTO_ADMIN_USERNAME="admin"
 MAGENTO_ADMIN_PASSWORD="OpenShiftAdmin123"
 
-if [ ! -f ${OPENSHIFT_DATA_DIR}.magento-sample-installed ];
+if [ "$OPENSHIFT_APP_DNS" == "$OPENSHIFT_GEAR_DNS" ]
 then
-  echo "Extracting sample data"
-  tar xvzf ${OPENSHIFT_REPO_DIR}misc/${SAMPLE_NAME}.tar.gz -C $OPENSHIFT_TMP_DIR 2>&1 >/dev/null
+  if [ ! -f ${OPENSHIFT_DATA_DIR}.magento-sample-installed ]
+  then
+    echo "Extracting sample data"
+    tar xvzf ${OPENSHIFT_REPO_DIR}misc/${SAMPLE_NAME}.tar.gz -C $OPENSHIFT_TMP_DIR 2>&1 >/dev/null
 
-  # Move the media folder into it's correct place
-  mv ${OPENSHIFT_REPO_DIR}misc/media $OPENSHIFT_DATA_DIR
-  mv  ${OPENSHIFT_TMP_DIR}${SAMPLE_NAME}/media/* ${OPENSHIFT_DATA_DIR}media
+    # Move the media folder into its correct place
+    mv ${OPENSHIFT_REPO_DIR}misc/media $OPENSHIFT_DATA_DIR
+    mv ${OPENSHIFT_TMP_DIR}${SAMPLE_NAME}/media/* ${OPENSHIFT_DATA_DIR}media
+    chmod -R o+w ${OPENSHIFT_DATA_DIR}media
+  fi
+elif [ -d ${OPENSHIFT_REPO_DIR}.openshift/magento/media ]
+then
+  rm -rf ${OPENSHIFT_DATA_DIR}media
+  cp -r ${OPENSHIFT_REPO_DIR}.openshift/magento/media ${OPENSHIFT_DATA_DIR}
   chmod -R o+w ${OPENSHIFT_DATA_DIR}media
 fi
 
@@ -36,14 +44,13 @@ then
     echo "rhc cartridge add -a $OPENSHIFT_APP_NAME -c mysql-5.1" 1>&2
     echo "then make a sample commit (add whitespace somewhere) and re-push" 1>&2
     echo 1>&2
-fi
-
-if [ -z "$OPENSHIFT_MYSQL_DB_HOST" ]
-then
     exit 5
 fi
 
-if [ ! -f ${OPENSHIFT_DATA_DIR}.magento-sample-installed ];
+if [ "$OPENSHIFT_APP_DNS" != "$OPENSHIFT_GEAR_DNS" ]
+then
+  touch ${OPENSHIFT_DATA_DIR}.magento-sample-installed
+elif [ ! -f ${OPENSHIFT_DATA_DIR}.magento-sample-installed ]
 then
   echo "Poulating database"
   mysql -h${OPENSHIFT_MYSQL_DB_HOST} -P${OPENSHIFT_MYSQL_DB_PORT} -u${OPENSHIFT_MYSQL_DB_USERNAME} -p${OPENSHIFT_MYSQL_DB_PASSWORD} ${OPENSHIFT_APP_NAME} < ${OPENSHIFT_TMP_DIR}magento-sample-data-1.6.1.0/magento_sample_data_for_1.6.1.0.sql
@@ -73,12 +80,20 @@ then
     --admin_username "$MAGENTO_ADMIN_USERNAME" \
     --admin_password "$MAGENTO_ADMIN_PASSWORD"
 
-  # Set the flag
-  touch $OPENSHIFT_DATA_DIR/.magento-sample-installed
+  touch ${OPENSHIFT_DATA_DIR}.magento-sample-installed
+
 fi
 
-# Rehome the configuration to 
-if [ -f "${OPENSHIFT_REPO_DIR}php/app/etc/local.xml" ]; then
+if [ "$OPENSHIFT_APP_DNS" != "$OPENSHIFT_GEAR_DNS" ]
+then
+  if [ -f ${OPENSHIFT_REPO_DIR}.openshift/magento/local.xml ]
+  then
+    cp ${OPENSHIFT_REPO_DIR}.openshift/magento/local.xml ${OPENSHIFT_DATA_DIR}
+    rm -f ${OPENSHIFT_REPO_DIR}php/app/etc/local.xml
+  fi
+elif [ -f "${OPENSHIFT_REPO_DIR}php/app/etc/local.xml" ]
+then
   mv ${OPENSHIFT_REPO_DIR}php/app/etc/local.xml ${OPENSHIFT_DATA_DIR}
 fi
-ln -s ${OPENSHIFT_DATA_DIR}local.xml ${OPENSHIFT_REPO_DIR}php/app/etc/local.xml
+ln -sf ${OPENSHIFT_DATA_DIR}local.xml ${OPENSHIFT_REPO_DIR}php/app/etc/local.xml
+
